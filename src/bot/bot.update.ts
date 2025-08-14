@@ -62,6 +62,12 @@ export class BotUpdate {
     await this.botService.getStatistics(ctx);
   }
 
+  @Hears('📁 Получить статистику')
+  @LogAction('hear_export_stats')
+  async onExportStats(@Ctx() ctx: Context) {
+    await this.botService.exportFinanceStats(ctx);
+  }
+
   @Hears('⚙️ Настройки')
   @LogAction('hear_settings')
   async onSettings(@Ctx() ctx: Context) {

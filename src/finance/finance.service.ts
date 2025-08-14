@@ -55,6 +55,45 @@ export class FinanceService {
     }
   }
 
+  async exportFinanceCsv(): Promise<Buffer> {
+    const transactions = await this.financeRepository.find({
+      relations: ['user', 'creator'],
+      order: { createdAt: 'DESC' },
+    });
+
+    const header = [
+      'ID',
+      'User ID',
+      'User Login',
+      'Created By',
+      'Creator Login',
+      'Amount',
+      'Remaining',
+      'Status',
+      'Created At',
+      'Updated At',
+    ];
+
+    const rows = transactions.map((tx) => [
+      tx.id,
+      tx.userId,
+      tx.user?.login || '',
+      tx.createdBy,
+      tx.creator?.login || '',
+      tx.amount,
+      tx.remaining_amount,
+      tx.status,
+      tx.createdAt,
+      tx.updatedAt,
+    ]);
+
+    const csvContent = [header, ...rows]
+      .map((row) => row.join(','))
+      .join('\n');
+
+    return Buffer.from(csvContent, 'utf8');
+  }
+
   async receiveAmountFromTransaction(
     transactionId: number,
     amount: number,
