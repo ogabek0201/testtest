@@ -7,6 +7,13 @@ import { FinanceStatus } from 'src/entities/finance-status.enum';
 import { FinanceHistoryService } from './finance-history.service';
 import { formatDate } from 'src/utils';
 
+const STATUS_LABELS: Record<FinanceStatus, string> = {
+  [FinanceStatus.PENDING]: 'В ожидании',
+  [FinanceStatus.CONFIRMED]: 'Подтверждена',
+  [FinanceStatus.RECEIVED]: 'Получена',
+  [FinanceStatus.CANCELED]: 'Отменена',
+};
+
 @Injectable()
 export class FinanceService {
   constructor(
@@ -88,7 +95,7 @@ export class FinanceService {
     transactions.forEach((tx) => {
       worksheet.addRow({
         recipient: tx.user?.login,
-        status: tx.status,
+        status: STATUS_LABELS[tx.status],
         sender: tx.creator?.login || '',
         sentAt: formatDate(tx.createdAt),
         amount: tx.amount,

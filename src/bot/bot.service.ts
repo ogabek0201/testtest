@@ -63,7 +63,8 @@ export class BotService {
         buttons[0].push(commands.receive_money);
         break;
       case RoleEnum.ADMIN:
-        buttons.push([commands.search, commands.export_stat, commands.admin]);
+        buttons[0].push(commands.export_stat);
+        buttons.push([commands.search, commands.admin]);
         break;
     }
 
