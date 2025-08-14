@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as ExcelJS from 'exceljs';
 import { Finance } from '../entities/finance.entity';
 import { FinanceStatus } from 'src/entities/finance-status.enum';
 import { FinanceHistoryService } from './finance-history.service';
+import { formatDate } from 'src/utils';
 
 @Injectable()
 export class FinanceService {
@@ -53,6 +55,59 @@ export class FinanceService {
       console.error(err);
       throw new Error('internal_server_error');
     }
+  }
+
+  async exportFinanceXlsx(): Promise<Buffer> {
+    const transactions = await this.financeRepository.find({
+      relations: ['creator'],
+      order: { createdAt: 'DESC' },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Finance');
+
+    worksheet.columns = [
+      { header: 'Кто отправил', key: 'sender', width: 25 },
+      { header: 'Когда отправил', key: 'sentAt', width: 20 },
+      { header: 'Сумма', key: 'amount', width: 12 },
+      { header: 'Остаточная сумма', key: 'remaining', width: 18 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE2E2E2' },
+      };
+    });
+
+    transactions.forEach((tx) => {
+      worksheet.addRow({
+        sender: tx.creator?.login || '',
+        sentAt: formatDate(tx.createdAt),
+        amount: tx.amount,
+        remaining: tx.remaining_amount,
+      });
+    });
+
+    worksheet.getColumn('amount').numFmt = '#,##0.00';
+    worksheet.getColumn('remaining').numFmt = '#,##0.00';
+
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 
   async receiveAmountFromTransaction(
