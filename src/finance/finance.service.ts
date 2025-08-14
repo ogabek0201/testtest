@@ -59,7 +59,7 @@ export class FinanceService {
 
   async exportFinanceXlsx(): Promise<Buffer> {
     const transactions = await this.financeRepository.find({
-      relations: ['creator'],
+      relations: ['creator', 'user'],
       order: { createdAt: 'DESC' },
     });
 
@@ -67,6 +67,8 @@ export class FinanceService {
     const worksheet = workbook.addWorksheet('Finance');
 
     worksheet.columns = [
+      { header: 'Получатель', key: 'recipient', width: 25 },
+      { header: 'Статус', key: 'status', width: 14 },
       { header: 'Кто отправил', key: 'sender', width: 25 },
       { header: 'Когда отправил', key: 'sentAt', width: 20 },
       { header: 'Сумма', key: 'amount', width: 12 },
@@ -85,6 +87,8 @@ export class FinanceService {
 
     transactions.forEach((tx) => {
       worksheet.addRow({
+        recipient: tx.user?.login,
+        status: tx.status,
         sender: tx.creator?.login || '',
         sentAt: formatDate(tx.createdAt),
         amount: tx.amount,
