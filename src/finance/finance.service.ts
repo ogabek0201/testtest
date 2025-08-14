@@ -5,6 +5,7 @@ import * as ExcelJS from 'exceljs';
 import { Finance } from '../entities/finance.entity';
 import { FinanceStatus } from 'src/entities/finance-status.enum';
 import { FinanceHistoryService } from './finance-history.service';
+import { formatDate } from 'src/utils';
 
 @Injectable()
 export class FinanceService {
@@ -58,7 +59,7 @@ export class FinanceService {
 
   async exportFinanceXlsx(): Promise<Buffer> {
     const transactions = await this.financeRepository.find({
-      relations: ['user', 'creator'],
+      relations: ['creator'],
       order: { createdAt: 'DESC' },
     });
 
@@ -66,33 +67,42 @@ export class FinanceService {
     const worksheet = workbook.addWorksheet('Finance');
 
     worksheet.columns = [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'User ID', key: 'userId', width: 10 },
-      { header: 'User Login', key: 'userLogin', width: 20 },
-      { header: 'Created By', key: 'createdBy', width: 12 },
-      { header: 'Creator Login', key: 'creatorLogin', width: 20 },
-      { header: 'Amount', key: 'amount', width: 12 },
-      { header: 'Remaining', key: 'remaining', width: 12 },
-      { header: 'Status', key: 'status', width: 12 },
-      { header: 'Created At', key: 'createdAt', width: 20 },
-      { header: 'Updated At', key: 'updatedAt', width: 20 },
+      { header: 'Кто отправил', key: 'sender', width: 25 },
+      { header: 'Когда отправил', key: 'sentAt', width: 20 },
+      { header: 'Сумма', key: 'amount', width: 12 },
+      { header: 'Остаточная сумма', key: 'remaining', width: 18 },
     ];
 
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE2E2E2' },
+      };
+    });
 
     transactions.forEach((tx) => {
       worksheet.addRow({
-        id: tx.id,
-        userId: tx.userId,
-        userLogin: tx.user?.login || '',
-        createdBy: tx.createdBy,
-        creatorLogin: tx.creator?.login || '',
+        sender: tx.creator?.login || '',
+        sentAt: formatDate(tx.createdAt),
         amount: tx.amount,
         remaining: tx.remaining_amount,
-        status: tx.status,
-        createdAt: tx.createdAt,
-        updatedAt: tx.updatedAt,
+      });
+    });
+
+    worksheet.getColumn('amount').numFmt = '#,##0.00';
+    worksheet.getColumn('remaining').numFmt = '#,##0.00';
+
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
       });
     });
 
