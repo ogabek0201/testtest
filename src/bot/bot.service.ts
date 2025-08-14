@@ -104,10 +104,10 @@ export class BotService {
       return;
     }
 
-    const csvBuffer = await this.financeService.exportFinanceCsv();
+    const xlsxBuffer = await this.financeService.exportFinanceXlsx();
     await ctx.replyWithDocument({
-      source: csvBuffer,
-      filename: `finance_${Date.now()}.csv`,
+      source: xlsxBuffer,
+      filename: `finance_${Date.now()}.xlsx`,
     });
   }
 
