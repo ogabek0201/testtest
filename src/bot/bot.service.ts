@@ -63,7 +63,7 @@ export class BotService {
         buttons[0].push(commands.receive_money);
         break;
       case RoleEnum.ADMIN:
-        buttons.push([commands.search, commands.admin]);
+        buttons.push([commands.search, commands.export_stat, commands.admin]);
         break;
     }
 
@@ -95,6 +95,20 @@ export class BotService {
     }
 
     await ctx.reply(message);
+  }
+
+  async exportFinanceStats(ctx: Context) {
+    const user = await this.userService.getUserInfo(ctx.from?.id);
+    if (!user || user.role !== RoleEnum.ADMIN) {
+      await ctx.reply('❌ Доступ запрещён.');
+      return;
+    }
+
+    const csvBuffer = await this.financeService.exportFinanceCsv();
+    await ctx.replyWithDocument({
+      source: csvBuffer,
+      filename: `finance_${Date.now()}.csv`,
+    });
   }
 
   registerWizard(): WizardScene<RegisterWizardContext> {
