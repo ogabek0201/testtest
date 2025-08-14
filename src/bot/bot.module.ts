@@ -9,12 +9,15 @@ import { BotContext } from 'src/types';
 import { UserModule } from 'src/user/user.module';
 import { FinanceModule } from 'src/finance/finance.module';
 import { createRegisterWizard } from './wizard';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   imports: [
     TelegrafModule.forRootAsync({
-      useFactory: () => {
-        const stage = new Scenes.Stage<BotContext>([createRegisterWizard()]);
+      useFactory: (botService: BotService, userService: UserService) => {
+        const stage = new Scenes.Stage<BotContext>([
+          createRegisterWizard(userService, botService),
+        ]);
 
         return {
           token: process.env.BOT_TOKEN as string,
@@ -28,6 +31,7 @@ import { createRegisterWizard } from './wizard';
           ],
         };
       },
+      inject: [BotService, UserService],
     }),
     UserModule,
     FinanceModule,
