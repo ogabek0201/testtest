@@ -107,7 +107,7 @@ export class BotService {
     const xlsxBuffer = await this.financeService.exportFinanceXlsx();
     await ctx.replyWithDocument({
       source: xlsxBuffer,
-      filename: `finance_${Date.now()}.xlsx`,
+      filename: `Статистика_${new Date().toLocaleString()}.xlsx`,
     });
   }
 
