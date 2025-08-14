@@ -3,7 +3,7 @@ import { Context, Markup } from 'telegraf';
 import { WizardScene, Stage } from 'telegraf/scenes';
 import { UserService } from '../user/user.service';
 import { RoleEnum } from 'src/enums';
-import { BotContext, RegisterWizardContext } from 'src/types';
+import { BotContext } from 'src/types';
 import { commands } from 'src/config';
 import { FinanceService } from 'src/finance/finance.service';
 import { deleteMessageWithDelay, formatDate } from 'src/utils';
@@ -97,8 +97,8 @@ export class BotService {
     await ctx.reply(message);
   }
 
-  registerWizard(): WizardScene<RegisterWizardContext> {
-    return new WizardScene<RegisterWizardContext>(
+  registerWizard(): WizardScene<BotContext> {
+    return new WizardScene<BotContext>(
       'REGISTER_WIZARD',
       async (ctx) => {
         const sentMessage = await ctx.reply(
@@ -186,9 +186,9 @@ export class BotService {
     );
   }
 
-  setupScenes(): Stage<RegisterWizardContext> {
+  setupScenes(): Stage<BotContext> {
     const registerScene = this.registerWizard();
-    const stage = new Stage<RegisterWizardContext>([registerScene]);
+    const stage = new Stage<BotContext>([registerScene]);
 
     return stage;
   }
