@@ -5,11 +5,18 @@ interface RegisterWizardState {
   phone?: string;
 }
 
-interface BotSession extends Scenes.WizardSessionData {
+export interface BotSession extends Scenes.WizardSessionData {
   state: RegisterWizardState;
-  [x: string]: number | undefined;
-  waitingFor?: 'login' | 'phone' | 'search_user' | 'confirm_amount' | null;
+  waitingFor?:
+    | 'login'
+    | 'phone'
+    | 'search_user'
+    | 'confirm_amount'
+    | 'selecting_transaction'
+    | 'confirm_receving'
+    | null;
   waitingForPayment?: number | null;
+  waitingForTransaction?: number | null;
   paymentAmount?: number | null;
 }
 

@@ -9,11 +9,11 @@ export function createRegisterWizard(
 ): Scenes.WizardScene<BotContext> {
   return new Scenes.WizardScene<BotContext>(
     'REGISTER_WIZARD',
-    async (ctx) => {
+    async (ctx: BotContext) => {
       await ctx.reply('📝 Введите логин:');
       return ctx.wizard.next();
     },
-    async (ctx) => {
+    async (ctx: BotContext) => {
       if (!ctx.message || !('text' in ctx.message)) {
         await ctx.reply('❌ Пожалуйста, введите логин текстом.');
         return;
@@ -24,7 +24,7 @@ export function createRegisterWizard(
       );
       return ctx.wizard.next();
     },
-    async (ctx) => {
+    async (ctx: BotContext) => {
       if (!ctx.message) {
         await ctx.reply('❌ Ошибка! Пожалуйста, отправьте номер.');
         return;
